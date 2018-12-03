@@ -1,0 +1,11 @@
+README file for assignment 5:
+
+authors:
+    Calder Birdsey 
+
+known bugs: 
+
+sources:
+-https://linux.die.net/man/3/getline
+-https://www.programiz.com/c-programming/library-function/string.h/strcmp
+-https://www.geeksforgeeks.org/strtok-strtok_r-functions-c-examples/
