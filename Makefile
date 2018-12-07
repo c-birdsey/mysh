@@ -1,7 +1,10 @@
 CFLAGS = -Wall -pedantic -g
 
 .PHONY: all
-all: mysh test
+all: mysh test 
+
+mysh1: mysh1.c
+	gcc $(CFLAGS) -o $@ $^
 
 mysh: mysh.c
 	gcc $(CFLAGS) -o $@ $^
@@ -11,4 +14,4 @@ test: test.c
 
 .PHONY: clean
 clean:
-	rm -f mysh test
+	rm -f mysh test mysh1
