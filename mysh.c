@@ -112,6 +112,7 @@ io_parse(char * input) {
             count ++; 
         }
         char *io_file = strtok(args[1], " "); 
+        //call appropriate function 
         if(io_flag == 2) {
             char *io_file2 = strtok(args[2], " "); 
             io_redir(cmd_args, io_file, io_file2, append_flag); 
@@ -237,7 +238,7 @@ pipe_handler(char **cmds, int pipe_count) {
             io_parse(cmds[i]); 
             exit(1); 
         } else {
-            //wait and store pipefd[0] for next iteration and close output
+            //wait and store pipefd[0] for next iteration 
             wait(&exit_value); 
             infd = pipefd[0]; 
             close(pipefd[1]); 
