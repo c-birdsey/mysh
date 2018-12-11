@@ -20,6 +20,7 @@ void output_redir(char **cmd, char *output, int append_flag);
 void pipe_handler(char **pipe_args, int pipe_count); 
 void io_redir(char **cmd, char *input, char *output, int append_flag); 
 int count_pipes(char *args); 
+char check_op_order(char *input); 
 void print_args(char **args); 
 
 /*GLOBALS*/
@@ -32,8 +33,11 @@ main(int argc, char *argv[]) {
         char *input; 
         size_t buf = 0;
         //get line from command line and check for exit/blank input, then parse
-        if ((getline(&input, &buf, stdin) == -1) || (strncmp(input, "exit\n", 5) == 0)) {
+        if ((getline(&input, &buf, stdin) == -1)) {
             break;
+        }
+        if ((strncmp(input, "exit\n", 5) == 0)) {
+            break; 
         }
         if(strcmp(input, "\n") == 0) { 
             continue; 
@@ -75,6 +79,7 @@ io_parse(char * input) {
     int io_flag; 
     int append_flag = 0; 
     int count = 0; 
+    int io_order_flag = 0; 
     
     if((strchr(input, '<')) || (strstr(input, ">"))) {
         //set append flag first 
@@ -83,6 +88,11 @@ io_parse(char * input) {
         }
         //handle both input and output redir
         if((strchr(input, '<')) && (strstr(input, ">"))) {
+            if(check_op_order(input) == '>') {
+                io_order_flag = 1; 
+            } else {
+                io_order_flag = 0; 
+            }
             while((arg = strtok_r(input, "<>", &input))) {
                 args[count] = arg; 
                 count ++; 
@@ -102,6 +112,7 @@ io_parse(char * input) {
                 count ++; 
             }
             io_flag = 0; 
+            print_args(args); 
         }
         //parse out io files and cmds
         count = 0; 
@@ -115,7 +126,11 @@ io_parse(char * input) {
         //call appropriate function 
         if(io_flag == 2) {
             char *io_file2 = strtok(args[2], " "); 
-            io_redir(cmd_args, io_file, io_file2, append_flag); 
+            if(io_order_flag == 0) {
+                io_redir(cmd_args, io_file, io_file2, append_flag); 
+            } else {
+                io_redir(cmd_args, io_file2, io_file, append_flag); 
+            }
         } else if(io_flag == 1) {
             input_redir(cmd_args, io_file); 
         } else {
@@ -146,7 +161,7 @@ no_ops_execute(char **args) {
         return; 
     } else if(pid == 0) {
         execvp(args[0], args);
-        printf("Error: command not found\n"); 
+        perror("execvp"); 
         exit(1); 
     }
     wait(&exit_value); 
@@ -158,8 +173,13 @@ input_redir(char **cmd, char *input) {
     int exit_value;  
     int stdin = dup(0);  
     int file_fd = open(input, O_RDONLY); 
+    if(file_fd == -1){
+        perror("open"); 
+        return; 
+    }
     dup2(file_fd, 0); 
 
+    //fork child process 
     pid_t pid; 
     pid = fork(); 
     if (pid == -1) {
@@ -183,13 +203,18 @@ output_redir(char **cmd, char *output, int append_flag) {
     int flags; 
     int stdout = dup(1);
     if(append_flag == 1) {
-        flags = (O_WRONLY | O_CREAT | O_APPEND); 
+        flags = (O_RDWR | O_CREAT | O_APPEND); 
     } else {
-        flags = (O_WRONLY | O_CREAT); 
+        flags = (O_RDWR | O_CREAT); 
     }
     int file_fd = open(output, flags); 
+    if(file_fd == -1){
+        perror("open"); 
+        return; 
+    }
     dup2(file_fd, 1); 
 
+    //fork child process 
     pid_t pid; 
     pid = fork(); 
     if (pid == -1) {
@@ -253,16 +278,24 @@ io_redir(char **cmd, char *input, char *output, int append_flag) {
 
     //set flags
     if(append_flag == 1) {
-        flags = (O_WRONLY | O_CREAT | O_APPEND); 
+        flags = (O_RDWR | O_CREAT | O_APPEND); 
     } else {
-        flags = (O_WRONLY | O_CREAT); 
+        flags = (O_RDWR | O_CREAT); 
     }
     
     //manipulate fds
     int stdout = dup(1);
     int stdin = dup(0); 
     int infile_fd = open(input, O_RDONLY); 
+    if(infile_fd == -1){
+        perror("open"); 
+        return; 
+    }
     int outfile_fd = open(output, flags); 
+    if(outfile_fd == -1){
+        perror("open"); 
+        return; 
+    }
     dup2(infile_fd, 0);
     dup2(outfile_fd, 1);
 
@@ -296,6 +329,18 @@ count_pipes(char *args) {
         count += (args[i] == '|');
     }
     return count; 
+}
+
+char
+check_op_order(char *input) {
+    int first_op; 
+    for(int i = 0; i < sizeof(input); i ++){
+        if(input[i] == '<' || input[i] == '>') {
+            first_op = input[i]; 
+            break; 
+        }
+    }
+    return (char) first_op; 
 }
 
 /******** FOR TESTING **********/

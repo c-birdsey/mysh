@@ -1,7 +1,7 @@
 CFLAGS = -Wall -pedantic -g
 
 .PHONY: all
-all: mysh test
+all: mysh
 
 mysh: mysh.c
 	gcc $(CFLAGS) -o $@ $^
