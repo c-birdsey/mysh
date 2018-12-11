@@ -111,8 +111,7 @@ io_parse(char * input) {
                 args[count] = arg; 
                 count ++; 
             }
-            io_flag = 0; 
-            print_args(args); 
+            io_flag = 0;
         }
         //parse out io files and cmds
         count = 0; 
@@ -207,7 +206,7 @@ output_redir(char **cmd, char *output, int append_flag) {
     } else {
         flags = (O_RDWR | O_CREAT); 
     }
-    int file_fd = open(output, flags); 
+    int file_fd = open(output, flags, 0644); 
     if(file_fd == -1){
         perror("open"); 
         return; 
@@ -291,7 +290,7 @@ io_redir(char **cmd, char *input, char *output, int append_flag) {
         perror("open"); 
         return; 
     }
-    int outfile_fd = open(output, flags); 
+    int outfile_fd = open(output, flags, 0644); 
     if(outfile_fd == -1){
         perror("open"); 
         return; 

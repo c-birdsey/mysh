@@ -1,6 +1,6 @@
 CFLAGS = -Wall -pedantic -g
 
-.PHONY: all
+.PHONY: all 
 all: mysh
 
 mysh: mysh.c
