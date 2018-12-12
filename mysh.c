@@ -142,7 +142,7 @@ io_parse(char * input) {
         while((arg = strtok_r(input, " ", &input))) {
             args[count] = arg; 
             count ++; 
-        }
+        }       
         no_ops_execute(args);    
     }    
     free(args); 
@@ -285,14 +285,14 @@ io_redir(char **cmd, char *input, char *output, int append_flag) {
     //manipulate fds
     int stdout = dup(1);
     int stdin = dup(0); 
-    int infile_fd = open(input, O_RDONLY); 
-    if(infile_fd == -1){
-        perror("open"); 
-        return; 
-    }
     int outfile_fd = open(output, flags, 0644); 
     if(outfile_fd == -1){
-        perror("open"); 
+        perror("open out"); 
+        return; 
+    }
+    int infile_fd = open(input, O_RDONLY); 
+    if(infile_fd == -1){ 
+        perror("open in"); 
         return; 
     }
     dup2(infile_fd, 0);
@@ -304,6 +304,8 @@ io_redir(char **cmd, char *input, char *output, int append_flag) {
     if (pid == -1) {
         perror("fork"); 
         return; 
+
+
     } else if(pid == 0) {
         execvp(cmd[0], cmd); 
         perror("execvp"); 
@@ -333,7 +335,7 @@ count_pipes(char *args) {
 char
 check_op_order(char *input) {
     int first_op; 
-    for(int i = 0; i < sizeof(input); i ++){
+    for(int i = 0; i < strlen(input); i ++){
         if(input[i] == '<' || input[i] == '>') {
             first_op = input[i]; 
             break; 
