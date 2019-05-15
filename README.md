@@ -1,6 +1,6 @@
 # mysh
 
-Middlebury College CS315 Systems Programming- Fall 2018: This assignment features a simple shell that prints a prompt, accepts commands from the user, supports input/output redirection (<, >, >>), and pipelines. The shell can be exited with the 'exit' command or with ctrl-D. 
+Fall 2018: This assignment features a simple shell that prints a prompt, accepts commands from the user, supports input/output redirection (<, >, >>), and pipelines. The shell can be exited with the 'exit' command or with ctrl-D. 
 
 ## Authors
 
